@@ -3,6 +3,13 @@
 import kotlin.reflect.KProperty1
 import kotlin.reflect.full.declaredMemberProperties
 
+/**
+ * We can use meta-programming style for handler mark-up.
+ * Three type of events need to be supported - creates, updates,
+ * and deletes.
+ * Since we want our system to keep historical state, instead
+ * of traditional "soft" deletes we might opt to do real deletes.
+ */
 @Target(AnnotationTarget.FUNCTION)
 @Retention(AnnotationRetention.RUNTIME)
 annotation class OnCreate
@@ -59,8 +66,8 @@ fun underlyingTradeableUpdated(before: Underlying, after: Underlying) {
         /**
          * We need to signal to the repository that the option will be updated.
          * What if there'll be a generic update() function that actually does that?
-         * It can be invoked multiple times within a handler. Only the first one would
-         * actually make a memory allocation.
+         * It can be invoked multiple times within a handler. Only the first one
+         * would actually make a memory allocation.
          */
         option.update()
             .tradeable = after.tradeable
@@ -68,6 +75,12 @@ fun underlyingTradeableUpdated(before: Underlying, after: Underlying) {
             option.update()
                 .suspendReason = "trading stopped on underlying"
     }
+    /**
+     * Once handler ends, the system commits all the changes -
+     * everything marked as updated becomes the new current state.
+     * Committing the state would also trigger those handlers that expect
+     * that.
+     */
 }
 
 @OnUpdate
@@ -77,12 +90,13 @@ fun underlyingPricesUpdated(before: Underlying, after: Underlying) {
      * Here we want to dispatch multiple simultaneous price calculations
      * for every option based on this underlying.
      */
+    /**
+     * Somewhere we need to do calculation like this (simplified):
+     * after.mid = (after.bid + after.offer) / 2
+     * TODO: Another step in workflow that triggers the next one maybe?
+    **/
     after.options.forEach {
-        /**
-         * Probably the best way is to submit a pricing request?
-         * Need to get the repository for OptionPricingRequest somehow here.
-         */
-        OptionPricingRequest::class.new(object : OptionPricingRequest {
+         OptionPricingRequest::class.new(object : OptionPricingRequest {
             override val underlyingBid: Price
                 get() = after.bid
             override val underltyingOffer: Price
@@ -98,7 +112,7 @@ fun deleted(o: Option) {}
 /**
  * From the other point of view, if we declare Projection as a class,
  * maybe handler should be a part of it?
- * Would we need a class for every handler then?
+ * TODO: Would we need a class for every handler then?
  */
 interface HandlerWithProjection<T> {
     val properties: Array<KProperty1<T, *>>
@@ -108,8 +122,10 @@ interface HandlerWithProjection<T> {
 }
 
 /**
- * Or, alternatively, why not use another interface declaration just for the purposeto select
+ * Or, alternatively, why not use another interface declaration just for the purpose
  * of indicating which properties are in the projection?
+ * It remains compatible with the base but carries explicit overrides for those
+ * values that are supposed to be projected.
  */
 annotation class Projecting
 
@@ -117,6 +133,7 @@ annotation class Projecting
 interface UnderlyingPrices : Underlying {
     override val bid: Price
     override val offer: Price
+    override val mid : Price
 }
 
 interface OptionPrices : Option {
@@ -126,7 +143,6 @@ interface OptionPrices : Option {
 
 val optionPriceFilter = OptionPrices::class.declaredMemberProperties
 val underlyingPriceFilter = UnderlyingPrices::class.declaredMemberProperties
-
 
 interface OptionGreeksRequest {
     val underlyingBid: Price
