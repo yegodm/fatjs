@@ -57,6 +57,8 @@ interface Repository<T> {
      * Retrieves the state revision
      */
     fun revision(state : T) : Long
+
+    fun find(id: Any) : T?
 }
 
 inline fun <reified T : Any> KClass<*>.new(state : T): T {

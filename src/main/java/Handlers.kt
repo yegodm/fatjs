@@ -47,17 +47,15 @@ interface Projection<T> {
  * the same projection.
  */
 object TradeableFilter : Projection<Underlying> {
-    override val properties: Collection<KProperty1<Underlying, *>>
-        get() = listOf(Underlying::tradeable)
+    override val properties = listOf(Underlying::tradeable)
 }
 
 object PriceFilter : Projection<Underlying> {
-    override val properties: Collection<KProperty1<Underlying, *>>
-        get() = listOf(Underlying::bid, Underlying::offer)
+    override val properties = listOf(Underlying::bid, Underlying::offer)
 }
 
 annotation class PropertyFilter<T, P>
-    where P : Projection<T>
+        where P : Projection<T>
 
 @OnUpdate
 @PropertyFilter<Underlying, TradeableFilter>
@@ -70,10 +68,10 @@ fun underlyingTradeableUpdated(before: Underlying, after: Underlying) {
          * would actually make a memory allocation.
          */
         option.update()
-            .tradeable = after.tradeable
+                .tradeable = after.tradeable
         if (!after.tradeable)
             option.update()
-                .suspendReason = "trading stopped on underlying"
+                    .suspendReason = "trading stopped on underlying"
     }
     /**
      * Once handler ends, the system commits all the changes -
@@ -94,20 +92,19 @@ fun underlyingPricesUpdated(before: Underlying, after: Underlying) {
      * Somewhere we need to do calculation like this (simplified):
      * after.mid = (after.bid + after.offer) / 2
      * TODO: Another step in workflow that triggers the next one maybe?
-    **/
+     **/
     after.options.forEach {
-         OptionPricingRequest::class.new(object : OptionPricingRequest {
-            override val underlyingBid: Price
-                get() = after.bid
-            override val underltyingOffer: Price
-                get() = after.offer
+        OptionPricingRequest::class.new(object : OptionPricingRequest {
+            override val underlyingBid = after.bid
+            override val underltyingOffer = after.offer
         })
     }
 }
 
 
 @OnDelete
-fun deleted(o: Option) {}
+fun deleted(o: Option) {
+}
 
 /**
  * From the other point of view, if we declare Projection as a class,
@@ -133,7 +130,7 @@ annotation class Projecting
 interface UnderlyingPrices : Underlying {
     override val bid: Price
     override val offer: Price
-    override val mid : Price
+    override val mid: Price
 }
 
 interface OptionPrices : Option {
@@ -153,12 +150,92 @@ interface OptionGreeksRequest {
 
 
 fun calculatePrice(
-    mid: Double,
-    maturesIn: TimeInYears,
-    strike: Price,
-    rate: Double,
-    volatility: Double):
-    Pair<Price, Price>
-{
+        mid: Double,
+        maturesIn: TimeInYears,
+        strike: Price,
+        rate: Double,
+        volatility: Double):
+        Pair<Price, Price> {
     TODO("not implemented")
+}
+
+/**
+ * It is possible to declare all entities as immutable using {@code val} declarations
+ * only. However, it is somewhat challenging to expose instances for update in that case
+ * since we need explicit save() operation.
+ */
+interface Boo {
+    val fooRef: Long
+    val name: String
+    var rooRef: Long
+}
+
+interface Foo {
+    val id: Long
+    val name: String
+    val amount: Double
+    val active: Boolean
+}
+
+@OnUpdate
+fun activateFooOnBooUpdate(before: Boo, after: Boo) {
+    val foo = from<Foo>().find(after.fooRef)!!
+    from<Foo>().save(object : Foo by foo {
+        override val active = (after.name == "bigBoo")
+    })
+}
+
+/**
+ * Alternatively we can allow var declarations.
+ * That makes it possible to register entity for update either explicitly or
+ * implicitly, on a first setter call.
+ */
+interface FooVar {
+    var id: Long
+    var name: String
+    var amount: Double
+    var active: Boolean
+}
+
+@OnUpdate
+fun activateFooVarOnBooUpdate(before: Boo, after: Boo) {
+    val foo = from<FooVar>().find(after.fooRef)!!
+    foo.active = after.name == "tinyBoo"
+}
+
+/**
+ * Likely the best choice is to allow combination of var and
+ * val matching the semantics of immutable and mutable properties.
+ */
+interface Roo {
+    val id: Long
+    val description: String
+    var name: String
+    var amount: Double
+    var active: Boolean
+}
+
+@OnCreate
+fun createRooOnNewBoo(after: Boo) {
+    val roo = from<Roo>().new(object : Roo {
+        override val id = 1234L
+        override val description = "created from boo ${after.name}"
+        override var name  = after.name
+        override var amount = 1.0
+        override var active = false
+    })
+    after.rooRef = roo.id
+}
+
+object BooName : Projection<Boo> {
+    override val properties = listOf(Boo::name)
+}
+
+@OnUpdate
+@PropertyFilter<Boo, BooName>
+fun updateRooFromBoo(before: Boo, after: Boo) {
+    from<Roo>().find(after.rooRef)?.also {  roo ->
+        if (after.name != roo.name)
+            roo.name = after.name
+    }
 }

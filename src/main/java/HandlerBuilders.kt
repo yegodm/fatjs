@@ -1,5 +1,6 @@
 /**
  * TODO: Maybe builder-style would be a better choice?
+ * Resembles Rx-style to some extent.
  */
 val f = on<UnderlyingPrices>().updated { before, after ->
     val mid = (after.bid + after.offer) / 2
