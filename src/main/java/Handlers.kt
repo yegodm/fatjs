@@ -1,5 +1,6 @@
 @file:Suppress("unused")
 
+import kotlin.reflect.KClass
 import kotlin.reflect.KProperty1
 import kotlin.reflect.full.declaredMemberProperties
 
@@ -40,6 +41,9 @@ interface Projection<T> {
     val properties: Collection<KProperty1<T, *>>
 }
 
+class AllProjection<T> : Projection<T> {
+    override val properties : Collection<KProperty1<T, *>> = emptyList()
+}
 /**
  * Here is a filter declaration.
  * Only thing it has to provide is the list of property references.
@@ -228,3 +232,34 @@ fun updateRooFromBoo(before: Boo, after: Boo) {
             roo.name = after.name
     }
 }
+
+/**
+ * Another way of update handler declaration
+ */
+@OnUpdate
+fun updateRooFromBoo(state: Pair<Boo, Boo>)
+{
+    val (before, after) = state
+    // or
+    val (_, now) = state
+    // or
+    val booWas = state.first
+    val booIs = state.second
+}
+
+/**
+ * Alternative concise handler mark-up
+ */
+@Target(AnnotationTarget.FUNCTION)
+@Retention(AnnotationRetention.RUNTIME)
+annotation class OnUpdated<T> (
+        val projection : KClass<*>  = AllProjection::class
+)
+
+@OnUpdated<Boo>(BooName::class)
+fun booNameChanged(state: Pair<Boo, Boo>) {
+    val (before, after) = state
+
+    assert(after.name != before.name, { "expecting Boo::name to vary" })
+}
+
