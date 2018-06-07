@@ -148,19 +148,8 @@ interface OptionGreeksRequest {
     val offer: Price
 }
 
-
-fun calculatePrice(
-        mid: Double,
-        maturesIn: TimeInYears,
-        strike: Price,
-        rate: Double,
-        volatility: Double):
-        Pair<Price, Price> {
-    TODO("not implemented")
-}
-
 /**
- * It is possible to declare all entities as immutable using {@code val} declarations
+ * It is possible to declare all entities as immutable using **val** declarations
  * only. However, it is somewhat challenging to expose instances for update in that case
  * since we need explicit save() operation.
  */
@@ -186,7 +175,7 @@ fun activateFooOnBooUpdate(before: Boo, after: Boo) {
 }
 
 /**
- * Alternatively we can allow var declarations.
+ * Alternatively we can allow **var** declarations.
  * That makes it possible to register entity for update either explicitly or
  * implicitly, on a first setter call.
  */
@@ -204,8 +193,8 @@ fun activateFooVarOnBooUpdate(before: Boo, after: Boo) {
 }
 
 /**
- * Likely the best choice is to allow combination of var and
- * val matching the semantics of immutable and mutable properties.
+ * Likely the best choice is to allow combination of **var** and
+ * **val** matching the semantics of immutable and mutable properties.
  */
 interface Roo {
     val id: Long
