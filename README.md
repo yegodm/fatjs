@@ -16,7 +16,8 @@ ideally code-first so that new declarations can immediately be used in the appli
 All of those are exposed within the same schema. 
 1. Joining is possible between static, semi-static, and volatile objects. 
 For instance, trading a financial instrument such as option requires storing 
-three types of data:
+three types of data. Note that all three should be joined and presented in the trading UI 
+as a single row:
    1. static - option identification information which evolves rarely if ever, 
    and most of the time is in the external storage, not in memory;
    1. semi-static - trading controls like enabling/disabling for trading, algorithm choice 
@@ -25,7 +26,6 @@ three types of data:
    1. volatile - results of pricing and derivative calculations - must be kept in memory, 
    is updated in soft real time, but rarely resides in the external storage as values 
    typically decay within seconds;
-All three should be joined and presented in the trading UI as a single row.
 1. Distributed partitioned storage. Every node may decide on 
 what kind of persistence better suits its responsibilities. 
 For example, the core workflows run on simple binary key-value DB, 
