@@ -5,7 +5,7 @@
 val f = on<UnderlyingPrices>().updated { before, after ->
     val mid = (after.bid + after.offer) / 2
     after.options.forEach {
-        val (bid, ask) = calculatePrice(mid, it.maturesIn, it.strike, after.rate, after.volatility)
+        val (bid, ask) = calculatePrice(mid, it.maturesIn, it.strike, after.interestRate, after.volatility)
         it.update().bid = bid
         it.update().offer = ask
     }

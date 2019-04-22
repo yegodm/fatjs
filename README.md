@@ -40,6 +40,8 @@ Somewhat later functionality will be extended to cater for:
 1. Distributed computations;
 1. Big data integration.
 
-Language of choice - Kotlin. Some important features might not be there yet.
+Language of choice - Kotlin. Some important features might not be available in the language yet. 
+Such features as distributed workflows might be build on coroutines with interim persistence 
+However, it is not clear if current Kotlin version (1.3.30) has support for that kind of functionality.
 
 

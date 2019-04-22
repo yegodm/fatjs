@@ -45,6 +45,7 @@ interface UnderlyingStatic {
 
 interface UnderlyingParams : MarketState {
     var tradeable: Boolean
+    var priceable: Boolean
 }
 
 interface UnderlyingDynamic {
@@ -92,6 +93,14 @@ interface OptionPricingRequest {
     val underltyingOffer : Price
 }
 
+interface UnderlyingDOM {
+    val ric: RIC
+    val bid: Price
+    val bidVolume: Long
+    val offer: Price
+    val offerVolume: Long
+}
+
 interface MarketState {
-    val rate : Double
+    val interestRate : Double
 }

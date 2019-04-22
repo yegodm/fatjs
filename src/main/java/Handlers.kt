@@ -105,7 +105,27 @@ fun underlyingPricesUpdated(before: Underlying, after: Underlying) {
     }
 }
 
+/**
+ * For update it makes sense to support two variants of handler -
+ * with one or two parameters. The former is used when only the current state
+ * matters, the latter - when there is a need to access both before- and after-
+ * states.
+ */
+@OnUpdate
+fun onUpdateWithCurrentState(
+    underlying: Underlying
+) {
+}
 
+@OnUpdate
+fun onUpdateWithBeforeAfter(
+    before: Underlying, after: Underlying
+) {
+}
+
+/**
+ * Deletion is straightforward so far.
+ */
 @OnDelete
 fun deleted(o: Option) {
 }
