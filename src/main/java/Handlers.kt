@@ -273,7 +273,7 @@ fun updateRooFromBoo(state: Pair<Boo, Boo>)
 @Target(AnnotationTarget.FUNCTION)
 @Retention(AnnotationRetention.RUNTIME)
 annotation class OnUpdated<T> (
-        val projection : KClass<*>  = AllProjection::class
+    val projection : KClass<*>  = AllProjection::class
 )
 
 @OnUpdated<Boo>(BooName::class)

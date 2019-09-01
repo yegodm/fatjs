@@ -21,6 +21,9 @@ fun <T> from(): Repository<T> {
  * validation can be unambiguously performed. It is exactly one of
  * the Repository responsibilities.
  *
+ * Additionally, repository is responsible for raising an event to interested
+ * parties on each entity create/update/delete.
+ *
  * Even in case when an external system emits a message that our system
  * should process, we can represent that as creating a new entity in
  * the corresponding strongly-typed repository. And that is where the incoming
